@@ -14,11 +14,6 @@ function getValueFromInput(id:string) {
     return inputElement.value;
 } 
 
-function getPigCategory(){
-  
-    
-}
-
 function onLoad(){
     for (const pig of JSON.parse(localStorage.UserArray)) {
         pc.pigs.push(pig);
@@ -66,6 +61,8 @@ function refresh(){
 
     pigListTable.style.display = "block";
 
+    let deleteCalled = false
+
     pc.pigs.forEach((pig) =>{
         // Create a new row
         const newRow = pigListTable.insertRow();
@@ -99,7 +96,12 @@ function refresh(){
 
         // Add an event listener to the "Delete" button
         deleteButton.addEventListener("click", () => {
-        console.log("Delete button clicked");
+        console.log("Deleting " + pig.name);
+            if (deleteCalled === false) {
+            pc.delete(pig.id);
+            }
+            deleteCalled = true;
+            refresh()
         });
 
     })
@@ -164,6 +166,5 @@ document.getElementById('save-pig')?.addEventListener('click', () =>{
 document.getElementById('get-all')?.addEventListener('click', ()=>{
     console.log(pc.showAll())
 })
-
 
 
