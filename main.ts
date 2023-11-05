@@ -5,8 +5,11 @@ let pigCategorySelector = document.getElementById('pig-category') as HTMLSelectE
 var extraLabel = document.querySelector('label[for="extra-attribute"]')!
 var newInput = document.getElementById('extra-attribute') as HTMLInputElement
 var restAttributes = document.getElementById('rest-attributes')
+var errorContainer = document.getElementById('error-container');
 let pigListTable = ""
 let chosenCategory = ""
+
+// let emptyError = document.getElementById('empty-error') as HTMLParagraphElement
 
 
 function getValueFromInput(id:string) {
@@ -59,9 +62,12 @@ function refresh(){
 
     select!.selectedIndex = -1
 
+    if (errorContainer?.style.display === "block"){
+        errorContainer.style.display = "none";
+    }
+
     pigListTable.style.display = "block";
 
-    let deleteCalled = false
 
     pc.pigs.forEach((pig) =>{
         // Create a new row
@@ -96,15 +102,15 @@ function refresh(){
 
         // Add an event listener to the "Delete" button
         deleteButton.addEventListener("click", () => {
+            
         console.log("Deleting " + pig.name);
-            if (deleteCalled === false) {
             pc.delete(pig.id);
-            }
-            deleteCalled = true;
+            deleteButton.removeEventListener
             refresh()
         });
-
+        
     })
+    
 }
 
 
@@ -117,6 +123,7 @@ document.getElementById('add-pig')?.addEventListener('click', () =>{
         form.style.display = "none";
         return;
     }
+
 })
 pigCategorySelector?.addEventListener("change", () => {
     chosenCategory= pigCategorySelector?.value;
@@ -155,7 +162,64 @@ document.getElementById('save-pig')?.addEventListener('click', () =>{
     const personality = getValueFromInput('pig-personality');
     const extra = getValueFromInput('extra-attribute');
     
+
+    let array = [name, breed, height, weight, personality, extra]
+
+    for (let i = 0; i < array.length; i++) {
+        if (!array[i]){
+            console.log("found empty attribute")
+            let Error = document.getElementById('empty-error');
+            if (Error?.style.display === "none"){
+            Error!.style.display = "block"}
+            return;
+        }
+    }
+
+    pc.pigs.forEach(element => {
+        console.log("comparing personalities for pig" + element.id)
+        if (element.personality === personality){
+            console.log("personality error found")
+            let Error = document.getElementById('personality-error')
+            if (Error?.style.display === "none"){
+                Error.style.display = "block"
+                console.log("error display:" + Error.style.display)
+            }
+            return;
+        }
+        
+    });
+   
+    if(chosenCategory == "Grey"){
+        let numExtra = parseFloat(extra);
+        if (!(numExtra <= 100 && numExtra >= 0 )){
+            let Error = document.getElementById('swimming-error');
+            if (Error?.style.display === "none"){
+                Error!.style.display = "block"}
+                return; 
+        }        
+    }
+    else if(chosenCategory == "White"){
+        let numExtra = parseFloat(extra);
+        if (!(numExtra <= 100 && numExtra >= 0 )){
+            let Error = document.getElementById('running-error');
+            if (Error?.style.display === "none"){
+                Error!.style.display = "block"}
+                return; 
+        }        
+    }
+    else if(chosenCategory == "Black"){
+        let numExtra = parseFloat(extra);
+        if (!(numExtra <= 10 && numExtra >= 0 )){
+            let Error = document.getElementById('strength-error');
+            if (Error?.style.display === "none"){
+                Error!.style.display = "block"}
+                return; 
+        }        
+    }
+    console.log("adding new pig")
+    
     const newPig = new Pig(selected, name, breed, height, weight, personality, extra);
+    
     pc.add(newPig);
     
     refresh();
@@ -166,5 +230,6 @@ document.getElementById('save-pig')?.addEventListener('click', () =>{
 document.getElementById('get-all')?.addEventListener('click', ()=>{
     console.log(pc.showAll())
 })
+
 
 
