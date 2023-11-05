@@ -1,18 +1,38 @@
 var pc = new PigController()
 var form = document.getElementById('add-pig-form')!
-var pigListTable = document.getElementById('pig-list') as HTMLTableElement
+var selected: string;
+let pigCategorySelector = document.getElementById('pig-category') as HTMLSelectElement
+var extraLabel = document.querySelector('label[for="extra-attribute"]')!
+var newInput = document.getElementById('extra-attribute') as HTMLInputElement
+var restAttributes = document.getElementById('rest-attributes')
+let pigListTable = ""
+let chosenCategory = ""
+
 
 function getValueFromInput(id:string) {
     const inputElement = document.getElementById(id) as HTMLInputElement;
     return inputElement.value;
 } 
 
+function getPigCategory(){
+  
+    
+}
+
+function onLoad(){
+    for (const pig of JSON.parse(localStorage.UserArray)) {
+        pc.pigs.push(pig);
+    }
+    refresh()
+}
+   
 function refresh(){
 
     //reset add pig form
     const pigForm = document.getElementById('add-pig-form')
     const inputs = pigForm!.querySelectorAll('input') 
     const select = pigForm!.querySelector('select')
+    let pigListTable = document.getElementById('pig-list') as HTMLTableElement
 
     if (pigListTable) {
         const tbody = pigListTable.tBodies[0];
@@ -44,9 +64,12 @@ function refresh(){
 
     select!.selectedIndex = -1
 
+    pigListTable.style.display = "block";
+
     pc.pigs.forEach((pig) =>{
         // Create a new row
         const newRow = pigListTable.insertRow();
+
 
         // Create two cells (columns) for the new row
         const cell1 = newRow.insertCell(0);
@@ -80,66 +103,67 @@ function refresh(){
         });
 
     })
-
-
-
 }
 
-document.getElementById('add-pig')!.addEventListener('click', function(){
 
-    // var pig = new Pig("chestnut", "bob", "pitbelly", 54, 55, "cool")
-    // pc.add(pig)
-    let pigCategory = document.getElementById('pig-category') as HTMLSelectElement
-    var label = document.querySelector('label[for="extra-attribute"]')!
-    var newInput = document.getElementById('extra-attribute') as HTMLInputElement
-    var restAttributes = document.getElementById('rest-attributes')
-    const selected = pigCategory?.value;
-
-
+document.getElementById('add-pig')?.addEventListener('click', () =>{
+    
     if (form.style.display === "none"){
         form.style.display = "block";
     }
+    else {
+        form.style.display = "none";
+        return;
+    }
+})
+pigCategorySelector?.addEventListener("change", () => {
+    chosenCategory= pigCategorySelector?.value;
 
-    pigCategory?.addEventListener("change", () => {
+    if (chosenCategory === "Chestnut"){
+        extraLabel.innerHTML = "Language:"
+        newInput.type = "string"
+    }
+    else if (chosenCategory === "Black"){
+        extraLabel.innerHTML = "Strength:";
+        newInput.type = "number"
 
-        if (selected === "Chestnut"){
-            label.innerHTML = "Language:"
-            newInput.type = "string"
-        }
-        else if (selected === "Black"){
-            label.innerHTML = "Strength:";
-            newInput.type = "number"
+    }
+    else if (chosenCategory === "Grey"){
+        extraLabel.innerHTML = "Swimming:";
+        newInput.type = "number"
 
-        }
-        else if (selected === "Grey"){
-            label.innerHTML = "Swimming:";
-            newInput.type = "number"
+    }
+    else {
+        extraLabel.innerHTML = "Running:";
+        newInput.type = "number"
 
-        }
-        else {
-            label.innerHTML = "Running:";
-            newInput.type = "number"
+    }
+    restAttributes!.style.display = 'block'
+    selected = chosenCategory;
 
-        }
-        restAttributes!.style.display = 'block'
-    })
-    document.getElementById('save-pig')?.addEventListener('click', () =>{
-
-        const name = getValueFromInput('pig-name');
-        const breed = getValueFromInput('pig-breed');
-        const height = parseFloat(getValueFromInput('pig-height'));
-        const weight = parseFloat(getValueFromInput('pig-weight'));
-        const personality = getValueFromInput('pig-personality');
-        const extra = getValueFromInput('extra-attribute');
-      
-        const newPig = new Pig(selected, name, breed, height, weight, personality, extra);
-        pc.add(newPig);
-      
-        refresh();
-      });
 })
 
-document.getElementById('get-all')?.addEventListener('click', () =>{
+
+document.getElementById('save-pig')?.addEventListener('click', () =>{
+
+    const name = getValueFromInput('pig-name');
+    const breed = getValueFromInput('pig-breed');
+    const height = parseFloat(getValueFromInput('pig-height'));
+    const weight = parseFloat(getValueFromInput('pig-weight'));
+    const personality = getValueFromInput('pig-personality');
+    const extra = getValueFromInput('extra-attribute');
+    
+    const newPig = new Pig(selected, name, breed, height, weight, personality, extra);
+    pc.add(newPig);
+    
+    refresh();
+
+})
+
+
+document.getElementById('get-all')?.addEventListener('click', ()=>{
     console.log(pc.showAll())
 })
+
+
 
