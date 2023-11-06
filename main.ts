@@ -2,23 +2,25 @@ var pc = new PigController()
 var form = document.getElementById('add-pig-form')!
 var selected: string;
 let pigCategorySelector = document.getElementById('pig-category') as HTMLSelectElement
-var extraLabel = document.querySelector('label[for="extra-attribute"]')!
 var newInput = document.getElementById('extra-attribute') as HTMLInputElement
 var restAttributes = document.getElementById('rest-attributes')
 var errorContainer = document.getElementById('error-container');
-let pigListTable = ""
-let chosenCategory = ""
+let pigListTable: HTMLTableElement
+let chosenCategory: string
 const categoryMap = new Map<string,string>([
     ["Chestnut", "Language"],
     ["White", "Swimming Ability"],
     ["Black", "Strength Ability"],
     ["Grey", "Running Ability"]
 ]);
+const categoryTypeMap = new Map<string,string>([
+    ["Chestnut", "string"],
+    ["White", "number"],
+    ["Black", "number"],
+    ["Grey", "number"]
+]);
 
 
-
-
-// let emptyError = document.getElementById('empty-error') as HTMLParagraphElement
 
 
 function getValueFromInput(id:string) {
@@ -28,8 +30,15 @@ function getValueFromInput(id:string) {
 
 function onLoad(){
     for (const pig of JSON.parse(localStorage.UserArray)) {
-        pc.pigs.push(pig);
+        pc.add(pig);
+        Pig.num++;
     }
+    let index = 0;
+        pc.pigs.forEach((pig)=>{
+            pig.id = index;
+            console.log("PIG NEW ID: " + pig.id)
+            index ++;
+        })
     refresh()
 }
    
@@ -40,6 +49,7 @@ function refresh(){
     const inputs = pigForm!.querySelectorAll('input') 
     const select = pigForm!.querySelector('select')
     let pigListTable = document.getElementById('pig-list') as HTMLTableElement
+
 
     if (pigListTable) {
         const tbody = pigListTable.tBodies[0];
@@ -159,31 +169,46 @@ document.getElementById('add-pig')?.addEventListener('click', () =>{
     }
 
 })
-pigCategorySelector?.addEventListener("change", () => {
-    chosenCategory= pigCategorySelector?.value;
+pigCategorySelector!.addEventListener("change", () => {
+    if(pigCategorySelector){
+        let extraLabel = document.querySelector('label[for="extra-attribute"]')!;
+        let extrainput = document.getElementById('extra-attribute') as HTMLInputElement
+        chosenCategory = pigCategorySelector.value;
+        extraLabel.innerHTML = categoryMap.get(chosenCategory) as string
+        extrainput.type = categoryTypeMap.get(chosenCategory) as string
 
-    if (chosenCategory === "Chestnut"){
-        extraLabel.innerHTML = "Language:"
-        newInput.type = "string"
+        restAttributes!.style.display = 'block'
+        selected = chosenCategory;
     }
-    else if (chosenCategory === "Black"){
-        extraLabel.innerHTML = "Strength:";
-        newInput.type = "number"
 
-    }
-    else if (chosenCategory === "Grey"){
-        extraLabel.innerHTML = "Swimming:";
-        newInput.type = "number"
+    
 
-    }
-    else {
-        extraLabel.innerHTML = "Running:";
-        newInput.type = "number"
 
-    }
-    restAttributes!.style.display = 'block'
-    selected = chosenCategory;
+// if(extraLabel.){
+//     extraLabel = chosenLabel
+// }
 
+
+//     if (chosenCategory === "Chestnut"){
+//         extraLabel.innerHTML = "Language:"
+//         newInput.type = "string"
+//     }
+//     else if (chosenCategory === "Black"){
+//         extraLabel.innerHTML = "Strength:";
+//         newInput.type = "number"
+
+//     }
+//     else if (chosenCategory === "Grey"){
+//         extraLabel.innerHTML = "Swimming:";
+//         newInput.type = "number"
+
+//     }
+//     else {
+//         extraLabel.innerHTML = "Running:";
+//         newInput.type = "number"
+
+//     }
+   
 })
 
 
@@ -195,6 +220,7 @@ document.getElementById('save-pig')?.addEventListener('click', () =>{
     const weight = parseFloat(getValueFromInput('pig-weight'));
     const personality = getValueFromInput('pig-personality');
     const extra = getValueFromInput('extra-attribute');
+    let errorMarker = false
     
 
     let array = [name, breed, height, weight, personality, extra]
@@ -205,7 +231,7 @@ document.getElementById('save-pig')?.addEventListener('click', () =>{
             let Error = document.getElementById('empty-error');
             if (Error?.style.display === "none"){
             Error!.style.display = "block"}
-            return;
+            errorMarker = true
         }
     }
 
@@ -213,15 +239,15 @@ document.getElementById('save-pig')?.addEventListener('click', () =>{
         console.log("comparing personalities for pig" + element.id)
         if (element.personality === personality){
             console.log("personality error found")
-            let Error = document.getElementById('personality-error')
+            errorMarker = true
+            let Error = document.getElementById('personality-error');
             if (Error?.style.display === "none"){
                 Error.style.display = "block"
                 console.log("error display:" + Error.style.display)
             }
-            return;
-        }
-        
+        } 
     });
+  
    
     if(chosenCategory == "Grey"){
         let numExtra = parseFloat(extra);
@@ -229,7 +255,7 @@ document.getElementById('save-pig')?.addEventListener('click', () =>{
             let Error = document.getElementById('swimming-error');
             if (Error?.style.display === "none"){
                 Error!.style.display = "block"}
-                return; 
+            errorMarker = true
         }        
     }
     else if(chosenCategory == "White"){
@@ -238,7 +264,7 @@ document.getElementById('save-pig')?.addEventListener('click', () =>{
             let Error = document.getElementById('running-error');
             if (Error?.style.display === "none"){
                 Error!.style.display = "block"}
-                return; 
+            errorMarker = true; 
         }        
     }
     else if(chosenCategory == "Black"){
@@ -247,9 +273,10 @@ document.getElementById('save-pig')?.addEventListener('click', () =>{
             let Error = document.getElementById('strength-error');
             if (Error?.style.display === "none"){
                 Error!.style.display = "block"}
-                return; 
+            errorMarker = true;
         }        
     }
+    if (errorMarker) {return}
     console.log("adding new pig")
     
     const newPig = new Pig(selected, name, breed, height, weight, personality, extra);
