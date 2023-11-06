@@ -8,6 +8,15 @@ var restAttributes = document.getElementById('rest-attributes')
 var errorContainer = document.getElementById('error-container');
 let pigListTable = ""
 let chosenCategory = ""
+const categoryMap = new Map<string,string>([
+    ["Chestnut", "Language"],
+    ["White", "Swimming Ability"],
+    ["Black", "Strength Ability"],
+    ["Grey", "Running Ability"]
+]);
+
+
+
 
 // let emptyError = document.getElementById('empty-error') as HTMLParagraphElement
 
@@ -68,11 +77,9 @@ function refresh(){
 
     pigListTable.style.display = "block";
 
-
     pc.pigs.forEach((pig) =>{
         // Create a new row
         const newRow = pigListTable.insertRow();
-
 
         // Create two cells (columns) for the new row
         const cell1 = newRow.insertCell(0);
@@ -90,28 +97,55 @@ function refresh(){
         cell3.appendChild(moreInfoButton);
 
         // Add an event listener to the "More Info" button
+        let isMoreInfoVisible = false; // Initial toggle state
+
         moreInfoButton.addEventListener("click", () => {
-        // Add your code to display the dropdown info box here
-        console.log("More Info button clicked");
+            console.log("More Info button clicked");
+        
+            if (isMoreInfoVisible) {
+                // If "More Info" is currently visible, delete it and update the toggle state
+                const moreInfoRow = pigListTable.rows[newRow.rowIndex + 1];
+                if (moreInfoRow) {
+                    pigListTable.deleteRow(newRow.rowIndex + 1);
+                }
+                isMoreInfoVisible = false;
+            } else {
+                // If "More Info" is not visible, create and display it, and update the toggle state
+                const moreInfoRow = pigListTable.insertRow(newRow.rowIndex + 1);
+                const moreInfoCell = moreInfoRow.insertCell(0);
+        
+                // Create the "More Info" table or div and populate it with additional information
+                const moreInfoTable = document.createElement("table"); // You can use a table or a div, depending on your design
+                const additionalInfo = document.createElement("p");
+                additionalInfo.textContent = `Pig Height: ${pig.height}, Weight: ${pig.weight}, Personality: ${pig.personality}, ${categoryMap.get(pig.category)}: ${pig.extra}`;
+                moreInfoTable.appendChild(additionalInfo);
+        
+                // Insert the "More Info" table or div as a cell in the new row
+                moreInfoCell.appendChild(moreInfoTable);
+                isMoreInfoVisible = true;
+            }
         });
+
+        
 
         // Create a "Delete" button in the fourth column
         const deleteButton = document.createElement("button");
         deleteButton.textContent = "Delete";
+        deleteButton.id = `${pig.id}`
+        console.log(deleteButton.id)
         cell4.appendChild(deleteButton);
 
         // Add an event listener to the "Delete" button
         deleteButton.addEventListener("click", () => {
-            
-        console.log("Deleting " + pig.name);
-            pc.delete(pig.id);
-            deleteButton.removeEventListener
+            console.log("deleting pig: "+ pig.name)
+            pc.delete(pig.id)
             refresh()
         });
         
     })
-    
 }
+    
+
 
 
 document.getElementById('add-pig')?.addEventListener('click', () =>{
@@ -230,6 +264,5 @@ document.getElementById('save-pig')?.addEventListener('click', () =>{
 document.getElementById('get-all')?.addEventListener('click', ()=>{
     console.log(pc.showAll())
 })
-
 
 
